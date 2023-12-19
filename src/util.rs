@@ -16,7 +16,7 @@ macro_rules! aoc_test {
         }
     };
     ($input:expr, $part1:expr, $part2:expr $(,)?) => {
-        aoc_test!($input, $part1, $input, $Part2)
+        aoc_test!($input, $part1, $input, $part2);
     };
 }
 pub(crate) use aoc_test;
