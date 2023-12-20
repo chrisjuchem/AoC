@@ -1,14 +1,14 @@
-use crate::util::aoc_test;
+use crate::util::{aoc_test, SplitInto};
 use std::cmp::max;
 use std::collections::HashMap;
 
 pub fn part1(_input: String) -> u64 {
     let mut sum = 0;
     'outer: for line in _input.trim().split("\n") {
-        let [game, rounds] = line.split(": ").collect::<Vec<_>>().try_into().unwrap();
+        let (game, rounds) = line.split_into(": ");
         for round in rounds.split("; ") {
             for pull in round.split(", ") {
-                let [n, color] = pull.split(" ").collect::<Vec<_>>().try_into().unwrap();
+                let (n, color) = pull.split_into(" ");
 
                 match (n.parse::<u64>().unwrap(), color) {
                     (n, "red") => {
@@ -39,11 +39,11 @@ pub fn part1(_input: String) -> u64 {
 pub fn part2(_input: String) -> u64 {
     let mut sum = 0;
     for line in _input.trim().split("\n") {
-        let [_, rounds] = line.split(": ").collect::<Vec<_>>().try_into().unwrap();
+        let (_, rounds) = line.split_into(": ");
         let mut counts = HashMap::new();
         for round in rounds.split("; ") {
             for pull in round.split(", ") {
-                let [n, color] = pull.split(" ").collect::<Vec<_>>().try_into().unwrap();
+                let (n, color) = pull.split_into(" ");
 
                 let color_entry = counts.entry(color).or_insert(0);
                 *color_entry = max(*color_entry, n.parse::<u64>().unwrap())
