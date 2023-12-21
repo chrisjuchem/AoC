@@ -26,7 +26,12 @@ pub trait SplitInto<'a, T> {
 }
 impl<'a> SplitInto<'a, (&'a str, &'a str)> for str {
     fn split_into(&'a self, delim: &str) -> (&'a str, &'a str) {
-        let array: [_; 2] = self.split(delim).collect::<Vec<_>>().try_into().unwrap();
+        let array: [_; 2] = self
+            .split(delim)
+            .filter(|s| *s != "")
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap();
         array.into()
     }
 }
