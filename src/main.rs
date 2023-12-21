@@ -1,3 +1,4 @@
+#![feature(iter_array_chunks)]
 use anyhow::{bail, Context};
 use clap::Parser;
 use std::fs;
