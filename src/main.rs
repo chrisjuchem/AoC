@@ -1,4 +1,6 @@
 #![feature(iter_array_chunks)]
+#![feature(slice_group_by)]
+
 use anyhow::{bail, Context};
 use clap::Parser;
 use std::fs;
