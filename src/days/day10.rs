@@ -3,14 +3,14 @@ use std::collections::VecDeque;
 use std::fmt::{Display, Formatter};
 
 #[derive(Copy, Clone, Debug)]
-enum Dir {
+pub enum Dir {
     Up,
     Down,
     Left,
     Right,
 }
 impl Dir {
-    fn drdc(&self) -> (isize, isize) {
+    pub fn drdc(&self) -> (isize, isize) {
         match self {
             Dir::Up => (-1, 0),
             Dir::Down => (1, 0),
@@ -117,7 +117,7 @@ pub fn part1(input: String) -> u64 {
 }
 
 #[derive(Copy, Clone, Eq, PartialEq)]
-enum State {
+pub enum State {
     Pipe,
     In,
     Out,
@@ -132,7 +132,7 @@ impl Display for State {
     }
 }
 
-fn floodfill(grid: &mut Vec<Vec<State>>) {
+pub fn floodfill(grid: &mut Vec<Vec<State>>) {
     let mut to_process = VecDeque::from([(0, 0)]);
 
     while !to_process.is_empty() {
