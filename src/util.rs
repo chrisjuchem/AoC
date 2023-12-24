@@ -41,3 +41,10 @@ impl<'a> SplitInto<'a, (&'a str, &'a str, &'a str)> for str {
         array.into()
     }
 }
+
+pub fn parse_grid<T>(input: String, f: impl Copy + Fn(char) -> T) -> Vec<Vec<T>> {
+    input
+        .lines()
+        .map(|row| row.chars().map(f).collect())
+        .collect()
+}
