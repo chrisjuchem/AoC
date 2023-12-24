@@ -1,23 +1,43 @@
 use crate::util::{aoc_test, SplitInto};
 use regex::Regex;
 use std::collections::HashMap;
+use std::ops::RangeInclusive;
 
 #[derive(Copy, Clone)]
-struct Part {
-    x: u64,
-    m: u64,
-    a: u64,
-    s: u64,
+struct Part<T> {
+    x: T,
+    m: T,
+    a: T,
+    s: T,
 }
-impl Part {
-    fn get(&self, field: &str) -> u64 {
+impl<T> Part<T> {
+    fn get(&self, field: &str) -> &T {
         match field {
-            "x" => self.x,
-            "m" => self.m,
-            "a" => self.a,
-            "s" => self.s,
+            "x" => &self.x,
+            "m" => &self.m,
+            "a" => &self.a,
+            "s" => &self.s,
             _ => panic!("no such field"),
         }
+    }
+
+    fn set(&mut self, field: &str, val: T) {
+        match field {
+            "x" => self.x = val,
+            "m" => self.m = val,
+            "a" => self.a = val,
+            "s" => self.s = val,
+            _ => panic!("no such field"),
+        }
+    }
+}
+
+impl Part<RangeInclusive<u64>> {
+    fn count(&self) -> u64 {
+        (self.x.end() - self.x.start() + 1)
+            * (self.m.end() - self.m.start() + 1)
+            * (self.a.end() - self.a.start() + 1)
+            * (self.s.end() - self.s.start() + 1)
     }
 }
 
@@ -61,22 +81,74 @@ impl<'a> From<&'a str> for Cond<'a> {
     }
 }
 impl<'a> Cond<'a> {
-    fn matches(&self, part: Part) -> bool {
+    fn matches(&self, part: Part<u64>) -> bool {
         match self {
             Cond::Always => true,
-            Cond::LessThan(f, n) => part.get(f) < *n,
-            Cond::GreaterThan(f, n) => part.get(f) > *n,
+            Cond::LessThan(f, n) => part.get(f) < n,
+            Cond::GreaterThan(f, n) => part.get(f) > n,
+        }
+    }
+
+    fn take_matching(
+        &self,
+        parts_opt: &mut Option<Part<RangeInclusive<u64>>>,
+    ) -> Option<Part<RangeInclusive<u64>>> {
+        let Some(parts) = parts_opt else { return None };
+
+        match self {
+            Cond::Always => parts_opt.take(),
+            Cond::LessThan(f, n) => {
+                let range = parts.get(f);
+                let (start, end) = (range.start(), range.end());
+
+                if start >= n {
+                    None
+                } else if end < n {
+                    parts_opt.take()
+                } else {
+                    let mut matching = parts.clone();
+                    matching.set(f, *start..=*n - 1);
+                    parts.set(f, *n..=*end);
+                    Some(matching)
+                }
+            }
+            Cond::GreaterThan(f, n) => {
+                let range = parts.get(f);
+                let (start, end) = (range.start(), range.end());
+
+                if end <= n {
+                    None
+                } else if start > n {
+                    parts_opt.take()
+                } else {
+                    let mut matching = parts.clone();
+                    matching.set(f, *n + 1..=*end);
+                    parts.set(f, *start..=*n);
+                    Some(matching)
+                }
+            }
         }
     }
 }
 
-fn process<'a>(part: Part, rules: &[Rule<'a>]) -> &'a str {
+fn process<'a>(part: Part<u64>, rules: &[Rule<'a>]) -> &'a str {
     for r in rules {
         if r.cond.matches(part) {
             return r.next_flow;
         }
     }
     panic!("no rule matched")
+}
+fn process_range<'a>(
+    parts: Part<RangeInclusive<u64>>,
+    rules: &'a [Rule<'a>],
+) -> impl Iterator<Item = (Part<RangeInclusive<u64>>, &'a str)> + 'a {
+    let mut parts = Some(parts);
+    rules.iter().filter_map(move |rule| {
+        rule.cond
+            .take_matching(&mut parts)
+            .map(|ps| (ps, rule.next_flow))
+    })
 }
 
 pub fn part1(_input: String) -> u64 {
@@ -118,7 +190,43 @@ pub fn part1(_input: String) -> u64 {
 }
 
 pub fn part2(_input: String) -> u64 {
-    0
+    let flows: HashMap<&str, Vec<Rule>> = _input
+        .split("\n\n")
+        .next()
+        .unwrap()
+        .lines()
+        .map(|line| {
+            let (name, rules) = line.split("}").next().unwrap().split_into("{");
+            (name, rules.split(",").map(Rule::from).collect())
+        })
+        .collect();
+
+    let mut parts_list = vec![(
+        Part {
+            x: 1..=4000,
+            m: 1..=4000,
+            a: 1..=4000,
+            s: 1..=4000,
+        },
+        "in",
+    )];
+    let mut accepted = 0;
+    while !parts_list.is_empty() {
+        let accepted_ref = &mut accepted;
+        parts_list = parts_list
+            .into_iter()
+            .flat_map(|(part_range, flow)| process_range(part_range, &flows.get(flow).unwrap()))
+            .filter(move |(part_range, new_flow)| match *new_flow {
+                "A" => {
+                    *accepted_ref += part_range.count();
+                    false
+                }
+                "R" => false,
+                _ => true,
+            })
+            .collect();
+    }
+    accepted
 }
 
 aoc_test!(
@@ -141,6 +249,5 @@ hdj{m>838:A,pv}
 {x=2127,m=1623,a=2188,s=1013}
 ",
     19114,
-    0,
-    // 167409079868000,
+    167409079868000,
 );
