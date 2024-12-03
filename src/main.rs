@@ -20,7 +20,7 @@ pub type AocYear = [AocDay; 25];
 
 #[derive(Parser)]
 struct Cli {
-    #[clap(long, default_value = "2024")]
+    #[clap(long, short, default_value = "2024")]
     year: u16,
     day: u8,
     part: u8,
@@ -29,8 +29,8 @@ struct Cli {
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let days = match cli.year {
-        2023 | 23 => aoc2023::DAYS,
-        2024 | 24 => aoc2024::DAYS,
+        2023 => aoc2023::DAYS,
+        2024 => aoc2024::DAYS,
         _ => bail!("invalid year"),
     };
     let day = days[cli.day as usize - 1];
