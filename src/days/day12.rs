@@ -19,7 +19,7 @@ impl From<char> for State {
 
 fn matches_groups(states: &Vec<State>, groups: &Vec<usize>) -> bool {
     states
-        .group_by(|a, b| a == b)
+        .chunk_by(|a, b| a == b)
         .filter(|slice| slice[0] == State::Broken)
         .map(|slice| slice.len())
         .eq(groups.iter().cloned())
