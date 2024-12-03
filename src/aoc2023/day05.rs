@@ -163,7 +163,7 @@ pub fn part2(input: String) -> u64 {
 
 #[cfg(test)]
 mod more_tests {
-    use crate::day05::{Range, RangeMap, SeedRange};
+    use super::{Range, RangeMap, SeedRange};
 
     #[test]
     fn test_overlap() {

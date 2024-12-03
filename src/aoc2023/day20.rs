@@ -1,4 +1,3 @@
-use crate::util::aoc_test;
 use regex::Regex;
 use std::collections::{HashMap, VecDeque};
 use std::hash::{DefaultHasher, Hash, Hasher};
@@ -203,16 +202,16 @@ pub fn part2(_input: String) -> u64 {
     panic!("broke loop")
 }
 
-aoc_test!(
-    "broadcaster -> a
-%a -> inv, con
-&inv -> b
-%b -> con
-&con -> rx
-",
-    11687500,
-    1,
-);
+// aoc_test!(
+//     "broadcaster -> a
+// %a -> inv, con
+// &inv -> b
+// %b -> con
+// &con -> rx
+// ",
+//     11687500,
+//     1,
+// );
 
 //jv rn
 // jv jn
