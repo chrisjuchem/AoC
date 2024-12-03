@@ -43,8 +43,8 @@ fn main() -> anyhow::Result<()> {
     let cookie = fs::read_to_string("cookie.txt").context("reading cookie")?;
     let input = reqwest::blocking::Client::new()
         .get(format!(
-            "https://adventofcode.com/2023/day/{}/input",
-            cli.day
+            "https://adventofcode.com/{}/day/{}/input",
+            cli.year, cli.day,
         ))
         .header("Cookie", cookie.trim())
         .send()
