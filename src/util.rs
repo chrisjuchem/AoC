@@ -48,3 +48,15 @@ pub fn parse_grid<T>(input: String, f: impl Copy + Fn(char) -> T) -> Vec<Vec<T>>
         .map(|row| row.chars().map(f).collect())
         .collect()
 }
+
+pub trait CollectVec: Iterator {
+    fn collect_vec(self) -> Vec<<Self as Iterator>::Item>;
+}
+impl<I> CollectVec for I
+where
+    I: Iterator,
+{
+    fn collect_vec(self) -> Vec<<Self as Iterator>::Item> {
+        self.collect()
+    }
+}
