@@ -8,6 +8,7 @@ mod infra;
 mod util;
 
 mod aoc2023;
+mod aoc2024;
 
 type AocFn = &'static dyn Fn(String) -> u64;
 #[derive(Copy, Clone)]
@@ -19,7 +20,7 @@ pub type AocYear = [AocDay; 25];
 
 #[derive(Parser)]
 struct Cli {
-    #[clap(long, default_value = "2023")]
+    #[clap(long, default_value = "2024")]
     year: u16,
     day: u8,
     part: u8,
@@ -29,6 +30,7 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let days = match cli.year {
         2023 | 23 => aoc2023::DAYS,
+        2024 | 24 => aoc2024::DAYS,
         _ => bail!("invalid year"),
     };
     let day = days[cli.day as usize - 1];
