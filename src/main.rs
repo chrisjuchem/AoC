@@ -4,6 +4,7 @@ use anyhow::{bail, Context};
 use clap::Parser;
 use std::fs;
 
+mod grid;
 mod infra;
 mod util;
 

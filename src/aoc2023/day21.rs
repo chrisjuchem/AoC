@@ -1,6 +1,6 @@
-use crate::util::{aoc_test, parse_grid};
+use crate::grid::parse_grid;
+use crate::util::aoc_test;
 use std::collections::HashMap;
-use std::convert::identity;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 struct Loc {
@@ -30,24 +30,15 @@ impl Loc {
     }
 }
 
-struct Grid(Vec<Vec<char>>);
-impl Grid {
-    fn get(&self, loc: Loc) -> char {
-        let r = loc.r.rem_euclid(self.0.len() as i32);
-        let c = loc.c.rem_euclid(self.0[0].len() as i32);
-        self.0[r as usize][c as usize]
-    }
-}
-
 pub fn part1(input: String) -> u64 {
-    let mut grid = parse_grid(input, identity);
+    let mut grid = parse_grid(input);
     let mut active = HashMap::new();
     let mut candidates = HashMap::new();
     let mut prev_active = HashMap::new();
-    for r in 0..grid.len() {
-        for c in 0..grid[0].len() {
-            if grid[r][c] == 'S' {
-                grid[r][c] = '.';
+    for r in 0..grid.h() {
+        for c in 0..grid.w() {
+            if grid.try_get_ref(r, c).unwrap() == &'S' {
+                grid.try_set(r, c, '.');
                 active.insert(
                     Loc {
                         r: r as i32,
@@ -94,11 +85,10 @@ pub fn part1(input: String) -> u64 {
         }
 
         for (loc, n) in candidates.iter() {
-            if loc.r >= grid.len() as i32 || loc.r < 0 || loc.c < 0 || loc.c >= grid[0].len() as i32
-            {
+            if loc.r >= grid.h() as i32 || loc.r < 0 || loc.c < 0 || loc.c >= grid.w() as i32 {
                 // invalid
             } else {
-                if grid[loc.r as usize][loc.c as usize] == '.' {
+                if grid.try_get(loc.r, loc.c) == Some('.') {
                     *active.entry(*loc).or_default() += n; //
                 }
             }
@@ -118,21 +108,23 @@ pub fn part2(input: String) -> u64 {
     // and that the grids 1 away from the final edge have time to fill completely. Not sure if those
     // are actually true, but it seems possible.
 
-    let mut grid = Grid(parse_grid(input, identity));
+    let mut grid = parse_grid(input);
     let mut active = HashMap::new();
     let mut candidates = HashMap::new();
     let mut prev_active = HashMap::new();
 
-    let (h, w) = (grid.0.len() as i32, grid.0[0].len() as i32);
-    assert_eq!(h, w);
-    let size = h;
+    assert_eq!(grid.h(), grid.w());
 
-    for r in 0..size {
-        for c in 0..size {
-            if grid.get(Loc { r, c }) == 'S' {
-                grid.0[r as usize][c as usize] = '.';
-                active.insert(Loc { r, c }, 1);
-            }
+    for ((r, c), cell) in grid.cells_mut() {
+        if *cell == 'S' {
+            *cell = '.';
+            active.insert(
+                Loc {
+                    r: r as i32,
+                    c: c as i32,
+                },
+                1,
+            );
         }
     }
 
@@ -171,7 +163,10 @@ pub fn part2(input: String) -> u64 {
         }
 
         for (loc, n) in candidates.iter() {
-            if grid.get(*loc) == '.' {
+            let r = loc.r.rem_euclid(grid.h() as i32);
+            let c = loc.c.rem_euclid(grid.w() as i32);
+
+            if grid.try_get(r, c) == Some('.') {
                 *active.entry(*loc).or_default() += n;
             }
         }

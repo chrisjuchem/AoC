@@ -1,24 +1,8 @@
-use crate::util::{aoc_test, parse_grid};
-use std::convert::identity;
+use crate::grid::parse_grid;
+use crate::util::aoc_test;
 
-struct Grid<T>(Vec<Vec<T>>);
-impl<T: Copy> Grid<T> {
-    fn get(&self, r: impl TryInto<usize>, c: impl TryInto<usize>) -> Option<T> {
-        let ru = r.try_into().ok()?;
-        let cu = c.try_into().ok()?;
-        self.0.get(ru).and_then(|row| row.get(cu)).copied()
-    }
-
-    fn w(&self) -> usize {
-        self.0[0].len()
-    }
-    fn h(&self) -> usize {
-        self.0.len()
-    }
-}
-
-pub fn part1(_input: String) -> u64 {
-    let grid = Grid(parse_grid(_input, identity));
+pub fn part1(input: String) -> u64 {
+    let grid = parse_grid(input);
 
     let dirs = [
         (0, 1),
@@ -32,33 +16,31 @@ pub fn part1(_input: String) -> u64 {
     ];
 
     let mut n = 0;
-    for row in 0..grid.h() as i32 {
-        for col in 0..grid.w() as i32 {
-            if grid.get(row, col) != Some('X') {
+    for ((row, col), cell) in grid.cells() {
+        if *cell != 'X' {
+            continue;
+        };
+
+        for (dr, dc) in dirs {
+            let mut r = row as i32;
+            let mut c = col as i32;
+
+            r += dr;
+            c += dc;
+            if grid.try_get(r, c) != Some('M') {
                 continue;
             };
-
-            for (dr, dc) in dirs {
-                let mut r = row;
-                let mut c = col;
-
-                r += dr;
-                c += dc;
-                if grid.get(r, c) != Some('M') {
-                    continue;
-                };
-                r += dr;
-                c += dc;
-                if grid.get(r, c) != Some('A') {
-                    continue;
-                };
-                r += dr;
-                c += dc;
-                if grid.get(r, c) != Some('S') {
-                    continue;
-                };
-                n += 1;
-            }
+            r += dr;
+            c += dc;
+            if grid.try_get(r, c) != Some('A') {
+                continue;
+            };
+            r += dr;
+            c += dc;
+            if grid.try_get(r, c) != Some('S') {
+                continue;
+            };
+            n += 1;
         }
     }
 
@@ -66,28 +48,34 @@ pub fn part1(_input: String) -> u64 {
 }
 
 pub fn part2(_input: String) -> u64 {
-    let grid = Grid(parse_grid(_input, identity));
+    let grid = parse_grid(_input);
 
     let mut n = 0;
-    for row in 0..grid.h() as i32 {
-        for col in 0..grid.w() as i32 {
-            if grid.get(row, col) != Some('A') {
-                continue;
-            };
+    for ((r, c), cell) in grid.cells() {
+        if *cell != 'A' {
+            continue;
+        };
 
-            match (grid.get(row - 1, col - 1), grid.get(row + 1, col + 1)) {
-                (Some('M'), Some('S')) => {}
-                (Some('S'), Some('M')) => {}
-                _ => continue,
-            }
-            match (grid.get(row - 1, col + 1), grid.get(row + 1, col - 1)) {
-                (Some('M'), Some('S')) => {}
-                (Some('S'), Some('M')) => {}
-                _ => continue,
-            }
-
-            n += 1
+        let row = r as i32;
+        let col = c as i32;
+        match (
+            grid.try_get(row - 1, col - 1),
+            grid.try_get(row + 1, col + 1),
+        ) {
+            (Some('M'), Some('S')) => {}
+            (Some('S'), Some('M')) => {}
+            _ => continue,
         }
+        match (
+            grid.try_get(row - 1, col + 1),
+            grid.try_get(row + 1, col - 1),
+        ) {
+            (Some('M'), Some('S')) => {}
+            (Some('S'), Some('M')) => {}
+            _ => continue,
+        }
+
+        n += 1
     }
     n
 }

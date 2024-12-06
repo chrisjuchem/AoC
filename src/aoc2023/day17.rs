@@ -1,4 +1,5 @@
-use crate::util::{aoc_test, parse_grid};
+use crate::grid::parse_grid_with;
+use crate::util::aoc_test;
 use priority_queue::priority_queue::PriorityQueue;
 use std::cmp::max;
 use std::ops::Not;
@@ -26,28 +27,26 @@ struct Node {
 }
 
 fn dijkstra(input: String, min_dist: isize, max_dist: isize) -> u64 {
-    let grid = parse_grid(input, |chr| chr.to_digit(10).unwrap() as u64);
+    let grid = parse_grid_with(input, |chr| chr.to_digit(10).unwrap() as u64);
 
     let mut unvisited = PriorityQueue::new();
-    for r in 0..grid.len() {
-        for c in 0..grid[0].len() {
-            unvisited.push(
-                Node {
-                    r,
-                    c,
-                    dir: Dir::Horizontal,
-                },
-                0,
-            );
-            unvisited.push(
-                Node {
-                    r,
-                    c,
-                    dir: Dir::Vertical,
-                },
-                0,
-            );
-        }
+    for ((r, c), _) in grid.cells() {
+        unvisited.push(
+            Node {
+                r,
+                c,
+                dir: Dir::Horizontal,
+            },
+            0,
+        );
+        unvisited.push(
+            Node {
+                r,
+                c,
+                dir: Dir::Vertical,
+            },
+            0,
+        );
     }
 
     let start_heat = u64::MAX;
@@ -72,7 +71,7 @@ fn dijkstra(input: String, min_dist: isize, max_dist: isize) -> u64 {
         // println!("{} nodes to process", unvisited.len());
         let (node, heat): (Node, u64) = unvisited.pop().unwrap();
         // println!("processing {:?}, dist={}", node, start_heat - heat);
-        if node.r == grid.len() - 1 && node.c == grid[0].len() - 1 {
+        if node.r == grid.h() - 1 && node.c == grid.w() - 1 {
             return start_heat - heat;
         }
 
@@ -86,7 +85,7 @@ fn dijkstra(input: String, min_dist: isize, max_dist: isize) -> u64 {
             for i in 1..=max_dist {
                 let r = node.r.wrapping_add_signed(dr * i);
                 let c = node.c.wrapping_add_signed(dc * i);
-                let Some(cooling) = grid.get(r).and_then(|row| row.get(c)) else {
+                let Some(cooling) = grid.try_get_ref(r, c) else {
                     break;
                 };
                 dist += cooling;
