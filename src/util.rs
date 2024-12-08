@@ -1,3 +1,6 @@
+use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
+
 macro_rules! aoc_test {
     ($input1:expr, $part1:expr, $input2:expr, $part2:expr $(,)?) => {
         #[cfg(test)]
@@ -52,5 +55,14 @@ where
 {
     fn collect_vec(self) -> Vec<<Self as Iterator>::Item> {
         self.collect()
+    }
+}
+
+pub trait MultiMap<K, T> {
+    fn insert_multi(&mut self, key: K, t: T);
+}
+impl<K: Eq + Hash, T: Eq + Hash> MultiMap<K, T> for HashMap<K, HashSet<T>> {
+    fn insert_multi(&mut self, key: K, t: T) {
+        self.entry(key).or_default().insert(t);
     }
 }
