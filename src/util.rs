@@ -1,7 +1,7 @@
 macro_rules! aoc_test {
     ($input1:expr, $part1:expr, $input2:expr, $part2:expr $(,)?) => {
         #[cfg(test)]
-        mod test {
+        mod aoc_test {
             use super::{part1, part2};
 
             #[test]
@@ -21,24 +21,25 @@ macro_rules! aoc_test {
 }
 pub(crate) use aoc_test;
 
+fn split_impl<'a, const N: usize>(input: &'a str, delim: &str) -> [&'a str; N] {
+    input
+        .split(delim)
+        .filter(|s| *s != "")
+        .collect::<Vec<_>>()
+        .try_into()
+        .unwrap()
+}
 pub trait SplitInto<'a, T> {
     fn split_into(&'a self, delim: &str) -> T;
 }
 impl<'a> SplitInto<'a, (&'a str, &'a str)> for str {
     fn split_into(&'a self, delim: &str) -> (&'a str, &'a str) {
-        let array: [_; 2] = self
-            .split(delim)
-            .filter(|s| *s != "")
-            .collect::<Vec<_>>()
-            .try_into()
-            .unwrap();
-        array.into()
+        split_impl::<2>(self, delim).into()
     }
 }
 impl<'a> SplitInto<'a, (&'a str, &'a str, &'a str)> for str {
     fn split_into(&'a self, delim: &str) -> (&'a str, &'a str, &'a str) {
-        let array: [_; 3] = self.split(delim).collect::<Vec<_>>().try_into().unwrap();
-        array.into()
+        split_impl::<3>(self, delim).into()
     }
 }
 
