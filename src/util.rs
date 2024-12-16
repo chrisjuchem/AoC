@@ -85,3 +85,16 @@ impl<T: Eq + Hash> CountMap<T> for HashMap<T, u64> {
         self.get(t.borrow()).copied().unwrap_or(0)
     }
 }
+
+pub trait ToCountMap<T> {
+    fn to_count_map(self) -> HashMap<T, u64>;
+}
+impl<I: Iterator<Item = T>, T: Eq + Hash> ToCountMap<T> for I {
+    fn to_count_map(mut self) -> HashMap<T, u64> {
+        let mut map = HashMap::new();
+        while let Some(t) = self.next() {
+            map.insert_one(t)
+        }
+        map
+    }
+}
