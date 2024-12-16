@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
@@ -64,5 +65,23 @@ pub trait MultiMap<K, T> {
 impl<K: Eq + Hash, T: Eq + Hash> MultiMap<K, T> for HashMap<K, HashSet<T>> {
     fn insert_multi(&mut self, key: K, t: T) {
         self.entry(key).or_default().insert(t);
+    }
+}
+
+pub trait CountMap<T> {
+    fn insert_one(&mut self, t: T);
+    fn insert_n(&mut self, t: T, n: u64);
+    fn count(&self, t: impl Borrow<T>) -> u64;
+}
+impl<T: Eq + Hash> CountMap<T> for HashMap<T, u64> {
+    fn insert_one(&mut self, t: T) {
+        self.insert_n(t, 1);
+    }
+    fn insert_n(&mut self, t: T, n: u64) {
+        *self.entry(t).or_default() += n;
+    }
+
+    fn count(&self, t: impl Borrow<T>) -> u64 {
+        self.get(t.borrow()).copied().unwrap_or(0)
     }
 }
