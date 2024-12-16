@@ -36,8 +36,71 @@ pub fn part1(input: String) -> u64 {
     quadrant[&1] * quadrant[&2] * quadrant[&3] * quadrant[&4]
 }
 
+#[cfg(test)]
 pub fn part2(_input: String) -> u64 {
     0
+}
+
+#[cfg(not(test))]
+pub fn part2(input: String) -> u64 {
+    use crate::util::CollectVec;
+    use std::collections::HashSet;
+    use std::time::Duration;
+
+    let re = Regex::new(r"p=(\d+),(\d+) v=(-?\d+),(-?\d+)").unwrap();
+    let (w, h) = (101, 103);
+
+    let mut bots = input
+        .trim()
+        .lines()
+        .map(|line| {
+            let c = re.captures(line).unwrap();
+            let (_, [c0, r0, dc, dr]) = c.extract();
+
+            let c0 = c0.parse::<i64>().unwrap();
+            let r0 = r0.parse::<i64>().unwrap();
+            let dc = dc.parse::<i64>().unwrap();
+            let dr = dr.parse::<i64>().unwrap();
+
+            (c0, r0, dc, dr)
+        })
+        .collect_vec();
+
+    let step = |v: &mut Vec<(i64, i64, i64, i64)>| {
+        for (c, r, dc, dr) in v.iter_mut() {
+            *c = (*c + *dc).rem_euclid(w);
+            *r = (*r + *dr).rem_euclid(h);
+        }
+    };
+
+    let print_bots = |bots: &Vec<(i64, i64, i64, i64)>| {
+        let locs = HashSet::<(&i64, &i64)>::from_iter(bots.iter().map(|(c, r, _, _)| (c, r)));
+        for r in 0..h {
+            for c in 0..w {
+                if locs.contains(&(&c, &r)) {
+                    print!("#")
+                } else {
+                    print!(".")
+                }
+            }
+            println!()
+        }
+        std::thread::sleep(Duration::from_millis(100))
+    };
+
+    for i in 0..7774 {
+        step(&mut bots);
+
+        // if i % 101 != 97 {
+        //     continue;
+        // }
+        // println!("{i}");
+        // print_bots(&bots)
+        // println!();
+    }
+    print_bots(&bots);
+
+    7774
 }
 
 aoc_test!(
