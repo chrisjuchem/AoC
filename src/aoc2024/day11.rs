@@ -10,7 +10,7 @@ fn blink(input: String, n_blinks: usize) -> u64 {
         .map(Result::unwrap)
         .for_each(|n| stones.insert_one(n));
 
-    for i in 0..n_blinks {
+    for _ in 0..n_blinks {
         let mut next = HashMap::new();
 
         for (n, c) in stones {

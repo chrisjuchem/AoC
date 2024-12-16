@@ -2,6 +2,83 @@
 
 use std::convert::identity;
 use std::fmt::{Debug, Display};
+use std::ops::{Add, Mul, Sub};
+
+#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
+pub struct Loc {
+    pub r: i64,
+    pub c: i64,
+}
+impl Loc {
+    pub fn new(r: impl TryInto<i64, Error: Debug>, c: impl TryInto<i64, Error: Debug>) -> Self {
+        Loc {
+            r: r.try_into().unwrap(),
+            c: c.try_into().unwrap(),
+        }
+    }
+
+    pub fn adj(&self) -> [Loc; 4] {
+        [
+            *self + DeltaLoc::new(1, 0),
+            *self + DeltaLoc::new(0, 1),
+            *self + DeltaLoc::new(-1, 0),
+            *self + DeltaLoc::new(0, -1),
+        ]
+    }
+}
+
+/// A - B points from B to A
+impl Sub for Loc {
+    type Output = DeltaLoc;
+    fn sub(self, rhs: Self) -> Self::Output {
+        DeltaLoc {
+            dr: self.r - rhs.r,
+            dc: self.c - rhs.c,
+        }
+    }
+}
+impl Add<DeltaLoc> for Loc {
+    type Output = Loc;
+    fn add(self, rhs: DeltaLoc) -> Self::Output {
+        Loc {
+            r: self.r + rhs.dr,
+            c: self.c + rhs.dc,
+        }
+    }
+}
+impl Sub<DeltaLoc> for Loc {
+    type Output = Loc;
+    fn sub(self, rhs: DeltaLoc) -> Self::Output {
+        Loc {
+            r: self.r - rhs.dr,
+            c: self.c - rhs.dc,
+        }
+    }
+}
+
+#[derive(Eq, PartialEq, Copy, Clone, Hash)]
+pub struct DeltaLoc {
+    pub dr: i64,
+    pub dc: i64,
+}
+impl DeltaLoc {
+    pub fn new(dr: impl TryInto<i64, Error: Debug>, dc: impl TryInto<i64, Error: Debug>) -> Self {
+        DeltaLoc {
+            dr: dr.try_into().unwrap(),
+            dc: dc.try_into().unwrap(),
+        }
+    }
+}
+impl Mul<i64> for DeltaLoc {
+    type Output = DeltaLoc;
+
+    fn mul(self, rhs: i64) -> Self::Output {
+        Self {
+            dr: self.dr * rhs,
+            dc: self.dc * rhs,
+        }
+    }
+}
 
 pub struct Grid<T>(Vec<Vec<T>>);
 impl<T> Grid<T> {

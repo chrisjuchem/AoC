@@ -1,67 +1,6 @@
-use crate::grid::parse_grid;
+use crate::grid::{parse_grid, Loc};
 use crate::util::{aoc_test, MultiMap};
 use std::collections::{HashMap, HashSet};
-use std::fmt::Debug;
-use std::ops::{Add, Mul, Sub};
-
-#[derive(Eq, PartialEq, Copy, Clone, Hash)]
-struct Loc {
-    r: i64,
-    c: i64,
-}
-impl Loc {
-    pub fn new(r: impl TryInto<i64, Error: Debug>, c: impl TryInto<i64, Error: Debug>) -> Self {
-        Loc {
-            r: r.try_into().unwrap(),
-            c: c.try_into().unwrap(),
-        }
-    }
-}
-
-/// A - B points from B to A
-impl Sub for Loc {
-    type Output = DeltaLoc;
-    fn sub(self, rhs: Self) -> Self::Output {
-        DeltaLoc {
-            dr: self.r - rhs.r,
-            dc: self.c - rhs.c,
-        }
-    }
-}
-impl Add<DeltaLoc> for Loc {
-    type Output = Loc;
-    fn add(self, rhs: DeltaLoc) -> Self::Output {
-        Loc {
-            r: self.r + rhs.dr,
-            c: self.c + rhs.dc,
-        }
-    }
-}
-impl Sub<DeltaLoc> for Loc {
-    type Output = Loc;
-    fn sub(self, rhs: DeltaLoc) -> Self::Output {
-        Loc {
-            r: self.r - rhs.dr,
-            c: self.c - rhs.dc,
-        }
-    }
-}
-
-#[derive(Eq, PartialEq, Copy, Clone, Hash)]
-struct DeltaLoc {
-    dr: i64,
-    dc: i64,
-}
-impl Mul<i64> for DeltaLoc {
-    type Output = DeltaLoc;
-
-    fn mul(self, rhs: i64) -> Self::Output {
-        Self {
-            dr: self.dr * rhs,
-            dc: self.dc * rhs,
-        }
-    }
-}
 
 pub fn part1(input: String) -> u64 {
     let grid = parse_grid(input);
