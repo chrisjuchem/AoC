@@ -172,6 +172,10 @@ impl<T: Copy> Grid<T> {
         let cu = c.try_into().unwrap();
         *self.0.get(ru).unwrap().get(cu).unwrap()
     }
+
+    pub fn filled_with(t: T, w: usize, h: usize) -> Self {
+        Grid(vec![vec![t; w]; h])
+    }
 }
 impl<T: Clone> Clone for Grid<T> {
     fn clone(&self) -> Self {
