@@ -77,6 +77,9 @@ pub fn part2(input: String) -> u64 {
 
         if n > NBYTES && solve(&grid).is_none() {
             println!("{line}");
+            #[cfg(not(test))]
+            std::process::exit(0);
+            #[cfg(test)]
             return r * 1000 + c;
         }
     }
