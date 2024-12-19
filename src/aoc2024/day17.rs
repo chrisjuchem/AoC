@@ -71,7 +71,7 @@ impl State {
     }
 }
 
-pub fn part1(input: String) -> u64 {
+pub fn part1(input: String) -> String {
     let re = Regex::new(
         r"Register A: (\d+)
 Register B: (\d+)
@@ -96,16 +96,12 @@ Program: ([\d,]+)",
         .map(|n| n.parse::<usize>().unwrap())
         .collect_vec();
 
-    println!(
-        "{}",
-        state
-            .run(&code)
-            .iter()
-            .map(usize::to_string)
-            .collect_vec()
-            .join(",")
-    );
-    return 0;
+    state
+        .run(&code)
+        .iter()
+        .map(usize::to_string)
+        .collect_vec()
+        .join(",")
 }
 
 pub fn part2(input: String) -> u64 {
@@ -212,7 +208,7 @@ Register B: 0
 Register C: 0
 
 Program: 0,1,5,4,3,0",
-    0,
+    "4,6,3,5,6,3,5,2,1,0",
     "Register A: 2024
 Register B: 0
 Register C: 0

@@ -65,7 +65,7 @@ pub fn part1(input: String) -> u64 {
     solve(&grid).unwrap()
 }
 
-pub fn part2(input: String) -> u64 {
+pub fn part2(input: String) -> String {
     let mut grid = Grid::filled_with(Cell::Stable, SIZE, SIZE);
 
     let mut n = 0;
@@ -76,11 +76,7 @@ pub fn part2(input: String) -> u64 {
         n += 1;
 
         if n > NBYTES && solve(&grid).is_none() {
-            println!("{line}");
-            #[cfg(not(test))]
-            std::process::exit(0);
-            #[cfg(test)]
-            return r * 1000 + c;
+            return String::from(line);
         }
     }
     panic!("not blocked")
@@ -113,5 +109,5 @@ aoc_test!(
 1,6
 2,0",
     22,
-    6001,
+    "6,1",
 );

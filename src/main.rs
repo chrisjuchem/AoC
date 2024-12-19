@@ -2,6 +2,7 @@
 
 use anyhow::{bail, Context};
 use clap::Parser;
+use std::fmt::Display;
 use std::fs;
 
 mod grid;
@@ -11,11 +12,23 @@ mod util;
 mod aoc2023;
 mod aoc2024;
 
-type AocFn = &'static dyn Fn(String) -> u64;
+trait AocFn {
+    fn call(&self, input: String) -> String;
+}
+impl<F, R> AocFn for F
+where
+    F: Fn(String) -> R,
+    R: ToString,
+{
+    fn call(&self, input: String) -> String {
+        self(input).to_string()
+    }
+}
+
 #[derive(Copy, Clone)]
 pub struct AocDay {
-    pub part1: AocFn,
-    pub part2: AocFn,
+    pub part1: &'static dyn AocFn,
+    pub part2: &'static dyn AocFn,
 }
 pub type AocYear = [AocDay; 25];
 
@@ -52,6 +65,6 @@ fn main() -> anyhow::Result<()> {
         .context("requesting input")?
         .text()
         .context("reading input")?;
-    println!("{}", func(input));
+    println!("{}", func.call(input));
     Ok(())
 }
