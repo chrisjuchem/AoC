@@ -2,7 +2,6 @@
 
 use anyhow::{bail, Context};
 use clap::Parser;
-use std::fmt::Display;
 use std::fs;
 
 mod grid;

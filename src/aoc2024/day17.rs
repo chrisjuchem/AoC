@@ -1,6 +1,5 @@
 use crate::util::{aoc_test, CollectVec};
 use regex::Regex;
-use std::time::Duration;
 
 #[derive(Debug, Clone)]
 struct State {
@@ -155,7 +154,7 @@ Program: ([\d,]+)",
 
     let (_, [a, b, c, codestr]) = re.captures(&input).unwrap().extract();
 
-    let mut initstate = State {
+    let initstate = State {
         a: a.parse().unwrap(),
         b: b.parse().unwrap(),
         c: c.parse().unwrap(),
