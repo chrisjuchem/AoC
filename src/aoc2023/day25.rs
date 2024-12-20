@@ -2,7 +2,7 @@ use crate::util::{aoc_test, SplitInto};
 use std::collections::HashMap;
 
 fn merge_edges<'a>(
-    mut edges: &mut HashMap<&str, HashMap<&'a str, usize>>,
+    edges: &mut HashMap<&str, HashMap<&'a str, usize>>,
     absorbing_edge: &'a str,
     absorbed_edge: &'a str,
 ) {
@@ -66,7 +66,6 @@ pub fn part1(input: String) -> usize {
         // }
 
         let mut best_n = 9999999;
-        let mut best_split = "";
 
         while edges.len() > 2 {
             // println!("{edges:?}");
@@ -86,9 +85,8 @@ pub fn part1(input: String) -> usize {
 
         if w < best_n {
             best_n = w;
-            best_split = other;
         }
-        if w == 3 {
+        if best_n == 3 {
             break node_counts.get(other).unwrap();
         }
 

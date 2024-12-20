@@ -7,7 +7,6 @@ struct State {
     b: usize,
     c: usize,
     pc: usize,
-    printed: bool,
 }
 impl State {
     fn with_a(mut self, a: usize) -> Self {
@@ -87,7 +86,6 @@ Program: ([\d,]+)",
         b: b.parse().unwrap(),
         c: c.parse().unwrap(),
         pc: 0,
-        printed: false,
     };
 
     let code = code
@@ -159,7 +157,6 @@ Program: ([\d,]+)",
         b: b.parse().unwrap(),
         c: c.parse().unwrap(),
         pc: 0,
-        printed: false,
     };
 
     let code = codestr

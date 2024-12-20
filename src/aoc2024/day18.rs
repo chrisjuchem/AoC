@@ -26,7 +26,7 @@ const SIZE: usize = 7;
 #[cfg(test)]
 const NBYTES: usize = 12;
 
-pub fn solve(grid: &Grid<Cell>) -> Option<u64> {
+fn solve(grid: &Grid<Cell>) -> Option<u64> {
     let mut seen = HashSet::new();
     let mut q = VecDeque::new();
     q.push_back((0, Loc::new(0, 0)));

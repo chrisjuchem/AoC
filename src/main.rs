@@ -11,7 +11,7 @@ mod util;
 mod aoc2023;
 mod aoc2024;
 
-trait AocFn {
+pub trait AocFn {
     fn call(&self, input: String) -> String;
 }
 impl<F, R> AocFn for F
