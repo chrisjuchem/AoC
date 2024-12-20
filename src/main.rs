@@ -1,4 +1,5 @@
 #![feature(iter_array_chunks)]
+#![feature(gen_blocks)]
 
 use anyhow::{bail, Context};
 use clap::Parser;

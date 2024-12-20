@@ -1,4 +1,4 @@
-use crate::util::{aoc_test, ToCountMap};
+use crate::util::{ToCountMap, aoc_test};
 use regex::Regex;
 use std::cmp::{Ord, Ordering};
 
@@ -88,7 +88,7 @@ pub fn part2(input: String) -> u64 {
         std::thread::sleep(Duration::from_millis(100))
     };
 
-    for i in 0..7774 {
+    for _ in 0..7774 {
         step(&mut bots);
 
         // if i % 101 != 97 {

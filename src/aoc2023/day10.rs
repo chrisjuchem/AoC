@@ -163,7 +163,7 @@ pub fn part2(input: String) -> u64 {
     let mut double_grid = vec![vec![State::In; cols * 2 + 1]; rows * 2 + 1];
 
     let path = path_tiles(input);
-    let (mut prevr, mut prevc) = path.last().unwrap();
+    let &(mut prevr, mut prevc) = path.last().unwrap();
     for (r, c) in path {
         double_grid[prevr + r + 1][prevc + c + 1] = State::Pipe;
         double_grid[r * 2 + 1][c * 2 + 1] = State::Pipe;

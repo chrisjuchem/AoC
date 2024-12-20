@@ -125,7 +125,7 @@ fn parse_modules(input: &str) -> HashMap<&str, Module> {
         .collect();
     for (input, output) in conns {
         match modules.get_mut(output).map(|module| &mut module.kind) {
-            Some(ModuleKind::Conjunction { ref mut inputs }) => {
+            Some(&mut ModuleKind::Conjunction { ref mut inputs }) => {
                 inputs.insert(input, false);
             }
             _ => {}
