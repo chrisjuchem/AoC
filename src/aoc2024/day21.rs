@@ -1,6 +1,7 @@
 use crate::grid::Loc;
+use crate::util::CountMap;
 use crate::util::aoc_test;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 fn num_map() -> HashMap<char, Loc> {
     [
@@ -29,101 +30,76 @@ fn dir_map() -> HashMap<char, Loc> {
     .into()
 }
 
-fn get_seqs(map: HashMap<char, Loc>, target: String) -> HashSet<String> {
-    let mut candidates = HashSet::from([String::new()]);
+fn get_seq(map: HashMap<char, Loc>, targets: HashMap<String, u64>) -> HashMap<String, u64> {
+    let mut seqs = HashMap::new();
 
     let illegal = Loc::new(0, -2);
 
-    let mut cur_pos = Loc::new(0, 0);
-    for c in target.chars() {
-        let delta = map[&c] - cur_pos;
+    for (target, n) in targets {
+        let mut cur_pos = Loc::new(0, 0);
+        assert!(target.ends_with("A"));
 
-        let mut paths = vec![];
+        for c in target.chars() {
+            let delta = map[&c] - cur_pos;
 
-        if cur_pos.r != illegal.r || cur_pos.c + delta.dc != illegal.c {
-            let mut path = String::new();
-            for _ in 0..(delta.dc.abs()) {
-                path.push(if delta.dc < 0 { '<' } else { '>' });
+            let mut seq = String::new();
+            let col_first = if cur_pos.r == illegal.r && cur_pos.c + delta.dc == illegal.c {
+                false
+            } else if cur_pos.r + delta.dr == illegal.r && cur_pos.c == illegal.c {
+                true
+            } else {
+                delta.dc < 0
+            };
+
+            if col_first {
+                for _ in 0..(delta.dc.abs()) {
+                    seq.push(if delta.dc < 0 { '<' } else { '>' });
+                }
             }
             for _ in 0..(delta.dr.abs()) {
-                path.push(if delta.dr < 0 { 'v' } else { '^' });
+                seq.push(if delta.dr < 0 { 'v' } else { '^' });
             }
-            path.push('A');
-            paths.push(path);
-        }
-        if cur_pos.r + delta.dr != illegal.r || cur_pos.c != illegal.c {
-            let mut path = String::new();
-            for _ in 0..(delta.dr.abs()) {
-                path.push(if delta.dr < 0 { 'v' } else { '^' });
+            if !col_first {
+                for _ in 0..(delta.dc.abs()) {
+                    seq.push(if delta.dc < 0 { '<' } else { '>' });
+                }
             }
-            for _ in 0..(delta.dc.abs()) {
-                path.push(if delta.dc < 0 { '<' } else { '>' });
-            }
-            path.push('A');
-            paths.push(path);
-        }
+            seq.push('A');
 
-        let mut new_candidates = HashSet::new();
-        for cand in candidates {
-            for path in &paths {
-                new_candidates.insert(cand.clone() + path.as_str());
-            }
-        }
-        candidates = new_candidates;
-        // println!("{paths:?}");
-        // println!("{candidates:?}");
+            seqs.insert_n(seq, n);
 
-        cur_pos = cur_pos + delta;
+            cur_pos = cur_pos + delta;
+        }
     }
-    candidates
+    seqs
 }
 
-pub fn part1(input: String) -> usize {
+pub fn solve(input: String, d: usize) -> usize {
     input
         .lines()
         .map(|line| {
-            // println!("{line}");
-            let s1 = get_seqs(num_map(), line.to_string());
-            // println!("{}", s1.len());
-            let s2 = s1
-                .into_iter()
-                .flat_map(|s| get_seqs(dir_map(), s))
-                .collect::<HashSet<String>>();
-            // println!("{}", s2.len());
-            let s3 = s2
-                .into_iter()
-                .flat_map(|s| get_seqs(dir_map(), s))
-                .collect::<HashSet<String>>();
-            // println!("{}", s3.len());
+            let mut s = get_seq(num_map(), HashMap::from([(line.to_string(), 1)]));
 
-            let best = s3.into_iter().min_by_key(|s| s.len()).unwrap();
+            for _ in 0..d {
+                s = get_seq(dir_map(), s);
+            }
 
-            line[0..line.len() - 1].parse::<usize>().unwrap() * best.len()
+            let len = s
+                .into_iter()
+                .map(|(k, v)| k.len() * (v as usize))
+                .sum::<usize>();
+
+            line[0..line.len() - 1].parse::<usize>().unwrap() * len
         })
         .sum()
 }
-/*
-379A
-^A^^<<A>>AvvvA
-<A>A<AAv<AA^>>AvAA^Av<AAA^>A
-v<<A^>>AvA^Av<<A^>>AAv<A<A^>>AA<Av>AA^Av<A^>AA<A>Av<A<A^>>AAA<Av>A^A
-           |                      .   '
-<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
-   <   A > A  v <<   AA >  ^ AA > A  v  AA ^ A   < v  AAA >  ^ A
-<A>Av<<AA>^AA>AvAA^A<vAAA>^A
- ^ A   <<  ^^ A >> A  vvv  A
 
+pub fn part1(input: String) -> usize {
+    solve(input, 2)
+}
 
-^^        <<         A
-<AA       v<AA       ^>>A
-v<<A^>>AA v<A<A^>>AA <Av>AA^A
-                        .   '
-<vA<AA>>^AA vA<^A>AA vA^A
-v<<AA       >^AA     >A
-<<          ^^       A
-*/
-pub fn part2(_input: String) -> u64 {
-    0
+pub fn part2(input: String) -> usize {
+    solve(input, 25)
 }
 
 aoc_test!(
@@ -133,5 +109,5 @@ aoc_test!(
 456A
 379A",
     126384,
-    0,
+    154115708116294,
 );
