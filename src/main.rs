@@ -1,5 +1,8 @@
 #![feature(iter_array_chunks)]
 #![feature(gen_blocks)]
+#![feature(macro_metavar_expr)]
+
+extern crate core;
 
 use anyhow::{Context, bail};
 use clap::Parser;

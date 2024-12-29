@@ -1,6 +1,7 @@
 use std::borrow::Borrow;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
+use variadics_please::all_tuples_with_size;
 
 macro_rules! aoc_test {
     ($input1:expr, $part1:expr, $input2:expr, $part2:expr $(,)?) => {
@@ -36,16 +37,16 @@ fn split_impl<'a, const N: usize>(input: &'a str, delim: &str) -> [&'a str; N] {
 pub trait SplitInto<'a, T> {
     fn split_into(&'a self, delim: &str) -> T;
 }
-impl<'a> SplitInto<'a, (&'a str, &'a str)> for str {
-    fn split_into(&'a self, delim: &str) -> (&'a str, &'a str) {
-        split_impl::<2>(self, delim).into()
-    }
+macro_rules! impl_split_into {
+    ($N:expr, $($T:ident),*) => {
+        impl<'a> SplitInto<'a, ($(&'a str ${ignore($T)}),*)> for str {
+            fn split_into(&'a self, delim: &str) -> ($(&'a str ${ignore($T)}),*) {
+                split_impl::<$N>(self, delim).into()
+            }
+        }
+    };
 }
-impl<'a> SplitInto<'a, (&'a str, &'a str, &'a str)> for str {
-    fn split_into(&'a self, delim: &str) -> (&'a str, &'a str, &'a str) {
-        split_impl::<3>(self, delim).into()
-    }
-}
+all_tuples_with_size!(impl_split_into, 2, 5, T);
 
 pub trait CollectVec: Iterator {
     fn collect_vec(self) -> Vec<<Self as Iterator>::Item>;
