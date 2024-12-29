@@ -1,7 +1,7 @@
 #![feature(iter_array_chunks)]
 #![feature(gen_blocks)]
 
-use anyhow::{bail, Context};
+use anyhow::{Context, bail};
 use clap::Parser;
 use std::fs;
 
@@ -55,16 +55,18 @@ fn main() -> anyhow::Result<()> {
     };
 
     let cookie = fs::read_to_string("cookie.txt").context("reading cookie")?;
-    let input = reqwest::blocking::Client::new()
+    let resp = reqwest::blocking::Client::new()
         .get(format!(
             "https://adventofcode.com/{}/day/{}/input",
             cli.year, cli.day,
         ))
         .header("Cookie", cookie.trim())
         .send()
-        .context("requesting input")?
-        .text()
-        .context("reading input")?;
+        .context("requesting input")?;
+    if !resp.status().is_success() {
+        panic!("Failed to fetch input");
+    }
+    let input = resp.text().context("reading input")?;
     println!("{}", func.call(input));
     Ok(())
 }
