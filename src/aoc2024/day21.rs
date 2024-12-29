@@ -1,6 +1,6 @@
 use crate::grid::Loc;
 use crate::util::aoc_test;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 fn num_map() -> HashMap<char, Loc> {
     [
@@ -29,50 +29,76 @@ fn dir_map() -> HashMap<char, Loc> {
     .into()
 }
 
-fn get_seq(map: HashMap<char, Loc>, target: String) -> String {
-    let mut seq = String::new();
+fn get_seqs(map: HashMap<char, Loc>, target: String) -> HashSet<String> {
+    let mut candidates = HashSet::from([String::new()]);
+
+    let illegal = Loc::new(0, -2);
+
     let mut cur_pos = Loc::new(0, 0);
     for c in target.chars() {
         let delta = map[&c] - cur_pos;
 
-        // moving horizontal first is more efficient because it guarantees all needed < presses are
-        // bunched together, and getting to < is most difficult.
-        // need to check that we can't move off keypad though
-        if cur_pos.r != 0 {
+        let mut paths = vec![];
+
+        if cur_pos.r != illegal.r || cur_pos.c + delta.dc != illegal.c {
+            let mut path = String::new();
             for _ in 0..(delta.dc.abs()) {
-                seq.push(if delta.dc < 0 { '<' } else { '>' });
+                path.push(if delta.dc < 0 { '<' } else { '>' });
             }
             for _ in 0..(delta.dr.abs()) {
-                seq.push(if delta.dr < 0 { 'v' } else { '^' });
+                path.push(if delta.dr < 0 { 'v' } else { '^' });
             }
-        } else {
+            path.push('A');
+            paths.push(path);
+        }
+        if cur_pos.r + delta.dr != illegal.r || cur_pos.c != illegal.c {
+            let mut path = String::new();
             for _ in 0..(delta.dr.abs()) {
-                seq.push(if delta.dr < 0 { 'v' } else { '^' });
+                path.push(if delta.dr < 0 { 'v' } else { '^' });
             }
             for _ in 0..(delta.dc.abs()) {
-                seq.push(if delta.dc < 0 { '<' } else { '>' });
+                path.push(if delta.dc < 0 { '<' } else { '>' });
+            }
+            path.push('A');
+            paths.push(path);
+        }
+
+        let mut new_candidates = HashSet::new();
+        for cand in candidates {
+            for path in &paths {
+                new_candidates.insert(cand.clone() + path.as_str());
             }
         }
-        seq.push('A');
+        candidates = new_candidates;
+        // println!("{paths:?}");
+        // println!("{candidates:?}");
 
         cur_pos = cur_pos + delta;
     }
-    seq
+    candidates
 }
 
 pub fn part1(input: String) -> usize {
     input
         .lines()
         .map(|line| {
-            println!("{line}");
-            let s1 = get_seq(num_map(), line.to_string());
-            println!("{s1}");
-            let s2 = get_seq(dir_map(), s1);
-            println!("{s2}");
-            let s3 = get_seq(dir_map(), s2);
-            println!("{s3}");
+            // println!("{line}");
+            let s1 = get_seqs(num_map(), line.to_string());
+            // println!("{}", s1.len());
+            let s2 = s1
+                .into_iter()
+                .flat_map(|s| get_seqs(dir_map(), s))
+                .collect::<HashSet<String>>();
+            // println!("{}", s2.len());
+            let s3 = s2
+                .into_iter()
+                .flat_map(|s| get_seqs(dir_map(), s))
+                .collect::<HashSet<String>>();
+            // println!("{}", s3.len());
 
-            line[0..line.len() - 1].parse::<usize>().unwrap() * s3.len()
+            let best = s3.into_iter().min_by_key(|s| s.len()).unwrap();
+
+            line[0..line.len() - 1].parse::<usize>().unwrap() * best.len()
         })
         .sum()
 }
