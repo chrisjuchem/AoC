@@ -15,6 +15,7 @@ mod util;
 
 mod aoc2023;
 mod aoc2024;
+mod aoc2025;
 
 pub trait AocFn {
     fn call(&self, input: String) -> String;
@@ -38,7 +39,7 @@ pub type AocYear = [AocDay; 25];
 
 #[derive(Parser)]
 struct Cli {
-    #[clap(long, short, default_value = "2024")]
+    #[clap(long, short, default_value = "2025")]
     year: u16,
     day: u8,
     part: u8,
@@ -49,6 +50,7 @@ fn main() -> anyhow::Result<()> {
     let days = match cli.year {
         2023 => aoc2023::DAYS,
         2024 => aoc2024::DAYS,
+        2025 => aoc2025::DAYS,
         _ => bail!("invalid year"),
     };
     let day = days[cli.day as usize - 1];
@@ -68,6 +70,9 @@ fn main() -> anyhow::Result<()> {
         .send()
         .context("requesting input")?;
     if !resp.status().is_success() {
+        if let Ok(content) = resp.text() {
+            println!("{content}");
+        }
         panic!("Failed to fetch input");
     }
     let input = resp.text().context("reading input")?;
