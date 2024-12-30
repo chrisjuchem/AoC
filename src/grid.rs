@@ -2,9 +2,9 @@
 
 use std::convert::identity;
 use std::fmt::{Debug, Display};
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, AddAssign, Mul, Sub};
 
-#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug)]
+#[derive(Eq, PartialEq, Copy, Clone, Hash, Debug, Ord, PartialOrd)]
 pub struct Loc {
     pub r: i64,
     pub c: i64,
@@ -53,6 +53,11 @@ impl Sub<DeltaLoc> for Loc {
             r: self.r - rhs.dr,
             c: self.c - rhs.dc,
         }
+    }
+}
+impl AddAssign<DeltaLoc> for Loc {
+    fn add_assign(&mut self, rhs: DeltaLoc) {
+        *self = *self + rhs
     }
 }
 
@@ -157,6 +162,19 @@ impl<T> Grid<T> {
         *self.0.get_mut(ru).unwrap().get_mut(cu).unwrap() = t;
     }
 }
+impl<T> Grid<T>
+where
+    T: PartialEq,
+{
+    pub fn find(&self, t: &T) -> Option<Loc> {
+        for ((r, c), cell) in self.cells() {
+            if cell == t {
+                return Some(Loc::new(r, c));
+            }
+        }
+        None
+    }
+}
 impl<T: Copy> Grid<T> {
     pub fn try_get(&self, r: impl TryInto<usize>, c: impl TryInto<usize>) -> Option<T> {
         let ru = r.try_into().ok()?;
@@ -194,13 +212,14 @@ impl<T: Display> Grid<T> {
     }
 }
 
-pub fn parse_grid(input: String) -> Grid<char> {
+pub fn parse_grid(input: impl AsRef<str>) -> Grid<char> {
     parse_grid_with(input, identity)
 }
 
-pub fn parse_grid_with<T>(input: String, f: impl Copy + Fn(char) -> T) -> Grid<T> {
+pub fn parse_grid_with<T>(input: impl AsRef<str>, f: impl Copy + Fn(char) -> T) -> Grid<T> {
     Grid(
         input
+            .as_ref()
             .lines()
             .map(|row| row.chars().map(f).collect())
             .collect(),
