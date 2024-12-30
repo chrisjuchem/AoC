@@ -48,7 +48,7 @@ impl PartialEq for State {
 }
 impl Eq for State {}
 
-pub fn route(input: String) -> (State, u64) {
+fn route(input: String) -> (State, u64) {
     let grid = parse_grid(input);
 
     let start = grid.find(&'S').unwrap();
