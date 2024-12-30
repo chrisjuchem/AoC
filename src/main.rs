@@ -3,6 +3,7 @@
 #![feature(macro_metavar_expr)]
 
 extern crate core;
+extern crate priority_queue;
 
 use anyhow::{Context, bail};
 use clap::Parser;
