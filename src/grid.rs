@@ -10,6 +10,7 @@ pub struct Loc {
     pub c: i64,
 }
 impl Loc {
+    #[track_caller]
     pub fn new(r: impl TryInto<i64, Error: Debug>, c: impl TryInto<i64, Error: Debug>) -> Self {
         Loc {
             r: r.try_into().unwrap(),
@@ -67,6 +68,7 @@ pub struct DeltaLoc {
     pub dc: i64,
 }
 impl DeltaLoc {
+    #[track_caller]
     pub fn new(dr: impl TryInto<i64, Error: Debug>, dc: impl TryInto<i64, Error: Debug>) -> Self {
         DeltaLoc {
             dr: dr.try_into().unwrap(),
@@ -123,6 +125,7 @@ impl<T> Grid<T> {
         let cu = c.try_into().ok()?;
         self.0.get_mut(ru).and_then(|row| row.get_mut(cu))
     }
+    #[track_caller]
     pub fn get_ref(
         &self,
         r: impl TryInto<usize, Error: Debug>,
@@ -132,6 +135,7 @@ impl<T> Grid<T> {
         let cu = c.try_into().unwrap();
         self.0.get(ru).unwrap().get(cu).unwrap()
     }
+    #[track_caller]
     pub fn get_mut(
         &mut self,
         r: impl TryInto<usize, Error: Debug>,
@@ -151,6 +155,7 @@ impl<T> Grid<T> {
             .map(|cell| *cell = t);
         Some(())
     }
+    #[track_caller]
     pub fn set(
         &mut self,
         r: impl TryInto<usize, Error: Debug>,
@@ -181,6 +186,7 @@ impl<T: Copy> Grid<T> {
         let cu = c.try_into().ok()?;
         self.0.get(ru).and_then(|row| row.get(cu)).copied()
     }
+    #[track_caller]
     pub fn get(
         &self,
         r: impl TryInto<usize, Error: Debug>,

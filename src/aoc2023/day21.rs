@@ -1,34 +1,6 @@
-use crate::grid::parse_grid;
+use crate::grid::{Loc, parse_grid};
 use crate::util::aoc_test;
-use std::collections::HashMap;
-
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-struct Loc {
-    r: i32,
-    c: i32,
-}
-impl Loc {
-    fn adjacent(self) -> [Loc; 4] {
-        [
-            Loc {
-                r: self.r - 1,
-                c: self.c,
-            },
-            Loc {
-                r: self.r + 1,
-                c: self.c,
-            },
-            Loc {
-                r: self.r,
-                c: self.c - 1,
-            },
-            Loc {
-                r: self.r,
-                c: self.c + 1,
-            },
-        ]
-    }
-}
+use std::collections::{HashMap, HashSet};
 
 pub fn part1(input: String) -> u64 {
     let mut grid = parse_grid(input);
@@ -39,13 +11,7 @@ pub fn part1(input: String) -> u64 {
         for c in 0..grid.w() {
             if grid.try_get_ref(r, c).unwrap() == &'S' {
                 grid.try_set(r, c, '.');
-                active.insert(
-                    Loc {
-                        r: r as i32,
-                        c: c as i32,
-                    },
-                    1,
-                );
+                active.insert(Loc::new(r, c), 1);
             }
         }
     }
@@ -54,6 +20,9 @@ pub fn part1(input: String) -> u64 {
     let steps = 64;
     #[cfg(test)]
     let steps = 6;
+
+    assert_eq!(grid.h(), grid.w());
+    let size = grid.h() as i64;
 
     for _ in 0..steps {
         // for r in 0..grid.len() {
@@ -78,14 +47,14 @@ pub fn part1(input: String) -> u64 {
         active.clear();
 
         for (loc, n) in prev_active.iter() {
-            for candidate in loc.adjacent() {
+            for candidate in loc.adj() {
                 let reached: &mut u64 = candidates.entry(candidate).or_default();
                 *reached = (*reached).max(*n)
             }
         }
 
         for (loc, n) in candidates.iter() {
-            if loc.r >= grid.h() as i32 || loc.r < 0 || loc.c < 0 || loc.c >= grid.w() as i32 {
+            if loc.r >= size || loc.r < 0 || loc.c < 0 || loc.c >= size {
                 // invalid
             } else {
                 if grid.try_get(loc.r, loc.c) == Some('.') {
@@ -98,7 +67,7 @@ pub fn part1(input: String) -> u64 {
     active.values().sum()
 }
 
-pub fn part2(input: String) -> u64 {
+pub fn part2(input: String) -> usize {
     // The grid has unobstructed channels vertically and horizontally from the starting location.
     //
     // Should be able to calculate the final pattern for a central copy of the grid and for each
@@ -109,70 +78,62 @@ pub fn part2(input: String) -> u64 {
     // are actually true, but it seems possible.
 
     let mut grid = parse_grid(input);
-    let mut active = HashMap::new();
-    let mut candidates = HashMap::new();
-    let mut prev_active = HashMap::new();
+
+    let mut frontier = HashSet::new();
+    let mut next_frontier = HashSet::new();
+    let mut step_times = HashMap::new();
 
     assert_eq!(grid.h(), grid.w());
+    let size = grid.h() as i64;
 
     for ((r, c), cell) in grid.cells_mut() {
         if *cell == 'S' {
             *cell = '.';
-            active.insert(
-                Loc {
-                    r: r as i32,
-                    c: c as i32,
-                },
-                1,
-            );
+            frontier.insert(Loc::new(r, c));
         }
     }
 
     #[cfg(not(test))]
-    let steps = 64;
+    let steps = 26501365;
     #[cfg(test)]
-    let steps = 49i32;
+    let steps = 100;
 
-    // let steps = steps.rem_euclid(&size) + size *
+    for i in 0..=steps {
+        if i % 1000 == 0 {
+            println!("{i}, {}", frontier.len());
+        }
 
-    for _ in 0..steps {
-        // for r in -4 * size..5 * size {
-        //     for c in -4 * size..5 * size {
-        //         let loc = Loc { r, c };
-        //         print!(
-        //             "{}",
-        //             active
-        //                 .get(&loc)
-        //                 .map(|n| n.to_string().chars().last().unwrap())
-        //                 .unwrap_or_else(|| grid.get(loc))
-        //         )
-        //     }
-        //     println!()
-        // }
-        // println!();
+        for l in frontier.drain() {
+            step_times.insert(l, i);
 
-        std::mem::swap(&mut active, &mut prev_active);
-        candidates.clear();
-        active.clear();
-
-        for (loc, n) in prev_active.iter() {
-            for candidate in loc.adjacent() {
-                let reached: &mut u64 = candidates.entry(candidate).or_default();
-                *reached = (*reached).max(*n)
+            for n in l.adj() {
+                let r = n.r.rem_euclid(size);
+                let c = n.c.rem_euclid(size);
+                if grid.try_get(r, c) == Some('.') && !step_times.contains_key(&n) {
+                    next_frontier.insert(n);
+                }
             }
         }
 
-        for (loc, n) in candidates.iter() {
-            let r = loc.r.rem_euclid(grid.h() as i32);
-            let c = loc.c.rem_euclid(grid.w() as i32);
-
-            if grid.try_get(r, c) == Some('.') {
-                *active.entry(*loc).or_default() += n;
-            }
-        }
+        std::mem::swap(&mut frontier, &mut next_frontier);
     }
 
-    active.values().sum()
+    // for r in -4 * size..5 * size {
+    //     for c in -4 * size..5 * size {
+    //         let loc = Loc::new(r, c);
+    //         print!(
+    //             "{}",
+    //             step_times
+    //                 .get(&loc)
+    //                 .map(|n| n.to_string().chars().last().unwrap())
+    //                 .unwrap_or_else(|| grid.get(r.rem_euclid(size), c.rem_euclid(size)))
+    //         )
+    //     }
+    //     println!()
+    // }
+    // println!();
+
+    step_times.values().filter(|t| *t % 2 == steps % 2).count()
 }
 
 aoc_test!(
@@ -204,7 +165,7 @@ aoc_test!(
     // ..S..
     // .....
     // #....",
-    1528, //fixme
+    6536,
 );
 
 /* 22
