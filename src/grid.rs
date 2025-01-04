@@ -87,6 +87,16 @@ impl Mul<i64> for DeltaLoc {
     }
 }
 
+pub fn cardinal_dirs() -> impl Iterator<Item = DeltaLoc> {
+    [
+        DeltaLoc::new(1, 0),
+        DeltaLoc::new(0, 1),
+        DeltaLoc::new(-1, 0),
+        DeltaLoc::new(0, -1),
+    ]
+    .into_iter()
+}
+
 pub struct Grid<T>(Vec<Vec<T>>);
 impl<T> Grid<T> {
     pub fn w(&self) -> usize {

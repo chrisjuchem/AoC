@@ -1,4 +1,4 @@
-use crate::grid::{Loc, parse_grid};
+use crate::grid::{DeltaLoc, Loc, cardinal_dirs, parse_grid};
 use crate::util::aoc_test;
 use std::collections::{HashMap, HashSet};
 
@@ -67,7 +67,7 @@ pub fn part1(input: String) -> u64 {
     active.values().sum()
 }
 
-pub fn part2(input: String) -> usize {
+pub fn part2(input: String) -> i64 {
     // The grid has unobstructed channels vertically and horizontally from the starting location.
     //
     // Should be able to calculate the final pattern for a central copy of the grid and for each
@@ -94,15 +94,15 @@ pub fn part2(input: String) -> usize {
     }
 
     #[cfg(not(test))]
-    let steps = 26501365;
+    let all_steps = 26501365;
     #[cfg(test)]
-    let steps = 100;
+    let all_steps = 1000;
+
+    let extent = 4;
+    println!("ext: {extent}");
+    let steps = (all_steps % size) + (size * extent);
 
     for i in 0..=steps {
-        if i % 1000 == 0 {
-            println!("{i}, {}", frontier.len());
-        }
-
         for l in frontier.drain() {
             step_times.insert(l, i);
 
@@ -133,7 +133,70 @@ pub fn part2(input: String) -> usize {
     // }
     // println!();
 
-    step_times.values().filter(|t| *t % 2 == steps % 2).count()
+    let mut counts = HashMap::new();
+
+    for i in -extent..=extent {
+        print!("{i:>2}");
+        for j in -extent..=extent {
+            let n = step_times
+                .iter()
+                .filter(|(l, t)| {
+                    l.r.div_floor(size) == i && l.c.div_floor(size) == j && (*t % 2 == steps % 2)
+                })
+                .count() as i64;
+
+            print!("{n:>6}");
+            counts.insert(Loc::new(i, j), n);
+        }
+        println!();
+    }
+    println!();
+
+    let l = all_steps / size;
+    println!("L: {l}");
+
+    let mut total = 0;
+
+    // inner triangle, quarters
+    let l2 = l / 2;
+    let n_b_tri = l2 * (l2 - 1); // x = l2 - 1   ((x * x+1)/2) * 2
+    let n_a_tri = n_b_tri + l2;
+    // let n_b_tri: i64 = (0..l).map(|n| n / 2).sum();
+    // let n_a_tri: i64 = (0..=l).map(|n| n / 2).sum();
+
+    // +1 for center tile
+    let n_b = n_b_tri * 4 + 1;
+    let n_a = n_a_tri * 4;
+    let b = counts[&Loc::new(0, 0)];
+    let a = counts[&Loc::new(0, 1)];
+    println!("B: {b}x{n_b}");
+    println!("A: {a}x{n_a}");
+    total += n_b * b;
+    total += n_a * a;
+
+    for dir in cardinal_dirs() {
+        let tip = Loc::new(extent * dir.dr, extent * dir.dc);
+
+        let c = counts[&tip];
+        total += c;
+
+        let outer = tip + DeltaLoc::new(dir.dc, -dir.dr);
+        let d = counts[&outer];
+
+        let inner = outer - dir;
+        let e = counts[&inner];
+
+        println!();
+        println!("C: {c}x1 {:?}", tip);
+        println!("D: {d}x{l} {:?}", outer);
+        println!("E: {e}x{} {:?}", l - 1, inner);
+
+        total += d * l;
+        total += e * (l - 1);
+    }
+
+    // step_times.values().filter(|t| *t % 2 == steps % 2).count()
+    total
 }
 
 aoc_test!(
@@ -165,7 +228,7 @@ aoc_test!(
     // ..S..
     // .....
     // #....",
-    6536,
+    668697,
 );
 
 /* 22
@@ -243,4 +306,12 @@ A       B
            ...
       L-2  1       0          1 0
       L-1  0       0          0 0
+
+Test fails for just these cases, idk why
+       expected   test    diff
+100 -> 6536       5270    1266
+500 -> 167004     166742  7129
+
+diff is roughly L * full tile(A/B) * 4
+
  */

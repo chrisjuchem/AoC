@@ -1,9 +1,7 @@
 #![feature(iter_array_chunks)]
 #![feature(gen_blocks)]
 #![feature(macro_metavar_expr)]
-
-extern crate core;
-extern crate priority_queue;
+#![feature(int_roundings)]
 
 use anyhow::{Context, bail};
 use clap::Parser;
