@@ -1,4 +1,4 @@
-use crate::util::{aoc_test, SplitInto};
+use crate::util::{SplitInto, aoc_test};
 use std::collections::HashMap;
 
 fn merge_edges<'a>(
@@ -51,9 +51,9 @@ pub fn part1(input: String) -> usize {
 
         // println!("{}", edges.len());
 
-        edges.insert("mega", HashMap::new());
         let a = edges.keys().next().unwrap().to_string();
         let a = nodes[a.as_str()];
+        edges.insert("mega", HashMap::new());
         merge_edges(&mut edges, "mega", a);
         let mut mega_node: Vec<&str> = vec![a];
 
