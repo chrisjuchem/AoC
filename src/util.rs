@@ -99,3 +99,13 @@ impl<I: Iterator<Item = T>, T: Eq + Hash> ToCountMap<T> for I {
         map
     }
 }
+
+macro_rules! test_val {
+    ($val:ident, $test:expr, $real:expr $(,)?) => {
+        #[cfg(test)]
+        let $val = $test;
+        #[cfg(not(test))]
+        let $val = $real;
+    };
+}
+pub(crate) use test_val;
