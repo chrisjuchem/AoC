@@ -3,6 +3,8 @@
 #![feature(macro_metavar_expr)]
 #![feature(int_roundings)]
 
+extern crate regex;
+
 use anyhow::{Context, bail};
 use clap::Parser;
 use std::fs;

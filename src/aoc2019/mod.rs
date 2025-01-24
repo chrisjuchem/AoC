@@ -26,6 +26,7 @@ pub mod day22;
 pub mod day23;
 pub mod day24;
 pub mod day25;
+mod intcode;
 
 pub const DAYS: AocYear = [
     aoc_day!(day01),
