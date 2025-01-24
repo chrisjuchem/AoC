@@ -1,37 +1,34 @@
 use crate::aoc2019::intcode::Program;
 use crate::util::aoc_test;
 
-pub fn part1(input: String) -> u64 {
+pub fn part1(input: String) -> i64 {
     let mut p: Program = input.parse().unwrap();
 
     #[cfg(not(test))]
     {
-        p.set(1, 12);
-        p.set(2, 2);
+        p.set(1, 12).unwrap();
+        p.set(2, 2).unwrap();
     }
 
-    p.run().unwrap()
+    p.run_0().unwrap()
 }
 
-pub fn part2(input: String) -> u64 {
-    #[cfg(test)]
-    return 0;
-
+pub fn part2(input: String) -> i64 {
     let p: Program = input.parse().unwrap();
 
     for noun in 0..100 {
         for verb in 0..100 {
             let mut p2 = p.clone();
-            p2.set(1, noun);
-            p2.set(2, verb);
+            p2.set(1, noun).unwrap();
+            p2.set(2, verb).unwrap();
 
-            if p2.run() == Ok(19690720) {
+            if p2.run_0() == Ok(19690720) {
                 return noun * 100 + verb;
             }
         }
     }
 
-    panic!("no solution");
+    return 987654321;
 }
 
-aoc_test!("1,9,10,3,2,3,11,0,99,30,40,50", 3500, 0,);
+aoc_test!("1,9,10,3,2,3,11,0,99,30,40,50", 3500, 987654321,);
