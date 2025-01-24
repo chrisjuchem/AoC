@@ -11,6 +11,7 @@ mod grid;
 mod infra;
 mod util;
 
+mod aoc2019;
 mod aoc2023;
 mod aoc2024;
 mod aoc2025;
@@ -46,6 +47,7 @@ struct Cli {
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let days = match cli.year {
+        2019 => aoc2019::DAYS,
         2023 => aoc2023::DAYS,
         2024 => aoc2024::DAYS,
         2025 => aoc2025::DAYS,
