@@ -1,4 +1,7 @@
-use crate::aoc2019::intcode::ProgramError::{BadAddr, BadOpcode, BadParamMode, WriteToImm};
+use crate::aoc2019::intcode::ProgramError::{
+    BadAddr, BadOpcode, BadParamMode, MissingInput, WriteToImm,
+};
+use std::collections::VecDeque;
 use std::convert::{TryFrom, TryInto};
 use std::fmt::Debug;
 use std::ops::Deref;
@@ -50,6 +53,8 @@ impl Value<'_> {
 pub enum OpCode {
     Add,
     Mul,
+    ReadInput,
+    WriteOutput,
     Halt,
 }
 
@@ -60,6 +65,8 @@ impl TryFrom<i64> for OpCode {
         Ok(match value {
             1 => OpCode::Add,
             2 => OpCode::Mul,
+            3 => OpCode::ReadInput,
+            4 => OpCode::WriteOutput,
             99 => OpCode::Halt,
             _ => return Err(BadOpcode(value)),
         })
@@ -70,8 +77,38 @@ impl TryFrom<i64> for OpCode {
 pub struct Program {
     pc: usize,
     data: Vec<i64>,
+    input: VecDeque<i64>,
+    output: Vec<i64>,
 }
+
+impl FromStr for Program {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        s.trim()
+            .split(",")
+            .map(str::parse)
+            .collect::<Result<_, _>>()
+            .map_err(|_| ())
+            .map(Program::new)
+    }
+}
+
 impl Program {
+    fn new(data: Vec<i64>) -> Self {
+        Self {
+            pc: 0,
+            data,
+            input: VecDeque::new(),
+            output: vec![],
+        }
+    }
+
+    pub fn with_input(mut self, input: Vec<i64>) -> Self {
+        self.input = VecDeque::from(input);
+        self
+    }
+
     fn read(&mut self, code: &mut i64) -> R<Value> {
         self.pc += 1;
         let mode = *code % 10;
@@ -88,31 +125,39 @@ impl Program {
     pub fn step(&mut self) -> R<StepResult> {
         let mut code = *self.read(&mut 1)?;
         let op = OpCode::try_from(code % 100)?;
-        code = code / 100;
+        let modes = &mut (code / 100);
 
-        Ok(match op {
+        match op {
             OpCode::Add => {
-                let a = *self.read(&mut code)?;
-                let b = *self.read(&mut code)?;
-                self.read(&mut code)?.write(a + b)?;
-                StepResult::Continue
+                let a = *self.read(modes)?;
+                let b = *self.read(modes)?;
+                self.read(modes)?.write(a + b)?;
             }
             OpCode::Mul => {
-                let a = *self.read(&mut code)?;
-                let b = *self.read(&mut code)?;
-                self.read(&mut code)?.write(a * b)?;
-                StepResult::Continue
+                let a = *self.read(modes)?;
+                let b = *self.read(modes)?;
+                self.read(modes)?.write(a * b)?;
             }
-            OpCode::Halt => StepResult::Halt,
-        })
+            OpCode::ReadInput => {
+                let val = self.input.pop_front().ok_or(MissingInput)?;
+                let mut x = self.read(modes)?;
+                x.write(val)?;
+            }
+            OpCode::WriteOutput => {
+                let x = *self.read(modes)?;
+                self.output.push(x);
+            }
+            OpCode::Halt => return Ok(StepResult::Halt),
+        }
+        Ok(StepResult::Continue)
     }
 
-    pub fn run(&mut self) -> R<()> {
+    pub fn run(&mut self) -> R<&[i64]> {
         let mut result = Ok(StepResult::Continue);
         loop {
             match result {
                 Ok(StepResult::Continue) => result = self.step(),
-                Ok(StepResult::Halt) => return Ok(()),
+                Ok(StepResult::Halt) => return Ok(&self.output),
                 Err(e) => return Err(e),
             };
         }
@@ -158,18 +203,6 @@ pub enum ProgramError {
     WriteToImm,
     BadParamMode(i64),
     BadOpcode(i64),
+    MissingInput,
 }
 type R<T> = Result<T, ProgramError>;
-
-impl FromStr for Program {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        s.trim()
-            .split(",")
-            .map(str::parse)
-            .collect::<Result<_, _>>()
-            .map_err(|_| ())
-            .map(|i| Program { pc: 0, data: i })
-    }
-}
