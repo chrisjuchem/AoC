@@ -72,6 +72,7 @@ impl<K: Eq + Hash, T: Eq + Hash> MultiMap<K, T> for HashMap<K, HashSet<T>> {
 pub trait CountMap<T> {
     fn insert_one(&mut self, t: T);
     fn insert_n(&mut self, t: T, n: u64);
+    #[expect(dead_code)]
     fn count(&self, t: impl Borrow<T>) -> u64;
 }
 impl<T: Eq + Hash> CountMap<T> for HashMap<T, u64> {

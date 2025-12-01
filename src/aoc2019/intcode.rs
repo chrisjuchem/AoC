@@ -109,7 +109,7 @@ impl Program {
         self
     }
 
-    fn read(&mut self, code: &mut i64) -> R<Value> {
+    fn read(&mut self, code: &mut i64) -> R<Value<'_>> {
         self.pc += 1;
         let mode = *code % 10;
         *code = *code / 10;
@@ -123,7 +123,7 @@ impl Program {
     }
 
     pub fn step(&mut self) -> R<StepResult> {
-        let mut code = *self.read(&mut 1)?;
+        let code = *self.read(&mut 1)?;
         let op = OpCode::try_from(code % 100)?;
         let modes = &mut (code / 100);
 

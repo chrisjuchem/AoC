@@ -103,7 +103,7 @@ fn press(modules: &mut HashMap<&str, Module>) -> (u64, u64) {
     (highs, lows)
 }
 
-fn parse_modules(input: &str) -> HashMap<&str, Module> {
+fn parse_modules(input: &str) -> HashMap<&str, Module<'_>> {
     let re = Regex::new(r"^([b%&])(\S+) -> (.*)$").unwrap();
     let mut modules: HashMap<_, _> = input
         .lines()
