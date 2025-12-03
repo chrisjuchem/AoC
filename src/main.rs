@@ -1,4 +1,5 @@
 #![feature(iter_array_chunks)]
+#![feature(iter_next_chunk)]
 #![feature(gen_blocks)]
 #![feature(macro_metavar_expr)]
 #![feature(int_roundings)]
