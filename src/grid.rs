@@ -26,6 +26,18 @@ impl Loc {
             *self + DeltaLoc::new(0, -1),
         ]
     }
+    pub fn adj8(&self) -> [Loc; 8] {
+        [
+            *self + DeltaLoc::new(1, 0),
+            *self + DeltaLoc::new(1, 1),
+            *self + DeltaLoc::new(0, 1),
+            *self + DeltaLoc::new(-1, 1),
+            *self + DeltaLoc::new(-1, 0),
+            *self + DeltaLoc::new(-1, -1),
+            *self + DeltaLoc::new(0, -1),
+            *self + DeltaLoc::new(1, -1),
+        ]
+    }
 }
 
 /// A - B points from B to A
@@ -96,6 +108,41 @@ pub fn cardinal_dirs() -> impl Iterator<Item = DeltaLoc> {
     ]
     .into_iter()
 }
+pub fn diagonal_dirs() -> impl Iterator<Item = DeltaLoc> {
+    [
+        DeltaLoc::new(1, 1),
+        DeltaLoc::new(-1, 1),
+        DeltaLoc::new(-1, -1),
+        DeltaLoc::new(1, -1),
+    ]
+    .into_iter()
+}
+
+// pub struct Cell<'g, T> {
+//     grid: &'g Grid<T>,
+//     loc: Loc,
+// }
+// impl<'g, T> Deref for Cell<'g, T> {
+//     type Target = T;
+//     fn deref(&self) -> &T {
+//         self.grid.get_ref(self.loc.r, self.loc.c)
+//     }
+// }
+// pub struct CellMut<'g, T> {
+//     grid: &'g mut Grid<T>,
+//     loc: Loc,
+// }
+// impl<'g, T> Deref for CellMut<'g, T> {
+//     type Target = T;
+//     fn deref(&self) -> &T {
+//         self.grid.get_ref(self.loc.r, self.loc.c)
+//     }
+// }
+// impl<'g, T> DerefMut for CellMut<'g, T> {
+//     fn deref_mut(&mut self) -> &mut T {
+//         self.grid.get_mut(self.loc.r, self.loc.c)
+//     }
+// }
 
 pub struct Grid<T>(Vec<Vec<T>>);
 impl<T> Grid<T> {
