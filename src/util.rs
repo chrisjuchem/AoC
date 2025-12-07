@@ -74,6 +74,7 @@ pub trait CountMap<T> {
     fn insert_n(&mut self, t: T, n: u64);
     #[expect(dead_code)]
     fn count(&self, t: impl Borrow<T>) -> u64;
+    fn total_count(&self) -> u64;
 }
 impl<T: Eq + Hash> CountMap<T> for HashMap<T, u64> {
     fn insert_one(&mut self, t: T) {
@@ -85,6 +86,10 @@ impl<T: Eq + Hash> CountMap<T> for HashMap<T, u64> {
 
     fn count(&self, t: impl Borrow<T>) -> u64 {
         self.get(t.borrow()).copied().unwrap_or(0)
+    }
+
+    fn total_count(&self) -> u64 {
+        self.values().sum()
     }
 }
 
