@@ -27,7 +27,7 @@ pub mod day23;
 pub mod day24;
 pub mod day25;
 
-pub const DAYS: AocYear = [
+pub const DAYS: AocYear = &[
     aoc_day!(day01),
     aoc_day!(day02),
     aoc_day!(day03),

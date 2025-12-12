@@ -37,7 +37,7 @@ pub struct AocDay {
     pub part1: &'static dyn AocFn,
     pub part2: &'static dyn AocFn,
 }
-pub type AocYear = [AocDay; 25];
+pub type AocYear = &'static [AocDay];
 
 #[derive(Parser)]
 struct Cli {
